@@ -11,28 +11,29 @@ redirect_from:
 
 Education
 ======
-* Ph.D in Version Control Theory, GitHub University, 2018 (expected)
-* M.S. in Jekyll, GitHub University, 2014
-* B.S. in GitHub, GitHub University, 2012
+* Ph.D in Chaos pyromancer, Izalith University, 2018 (expected)
+* M.S. in Crystal Magician, Vinheim Dragon School, 2014
+* B.S. in Light Magician, Oolacile Royal Academy, 2012
 
 Work experience
 ======
-* Spring 2024: Academic Pages Collaborator
-  * GitHub University
-  * Duties includes: Updates and improvements to template
-  * Supervisor: The Users
+* Spring 2009: Vanguard
+  * Boletarian Palace
+  * Duties includes: Kill the Player and Send their Soul to Nexus
 
-* Fall 2015: Research Assistant
-  * GitHub University
-  * Duties included: Merging pull requests
-  * Supervisor: Professor Hub
+* Fall 2011: Undead Asylum Demon
+  * Undead Asylum
+  * Duties included: Fuck all the hollows from the Northern Undead Asylum.
 
-* Summer 2015: Research Assistant
-  * GitHub University
-  * Duties included: Tagging issues
-  * Supervisor: Professor Git
+* Summer 2016: Stray Demon
+  * Farron Keep
+  * Duties included: Throw the ashes below the city wall
+
+* Spring 2022: Erdtree Avatar
+  * Minor Erdtree
+  * Duties included: Pray to the golden tree and collect Tears
   
-Skills
+<!-- Skills
 ======
 * Skill 1
 * Skill 2
@@ -57,8 +58,8 @@ Teaching
 ======
   <ul>{% for post in site.teaching reversed %}
     {% include archive-single-cv.html %}
-  {% endfor %}</ul>
+  {% endfor %}</ul> -->
   
 Service and leadership
 ======
-* Currently signed in to 43 different slack teams
+* Currently signed in to 114514 different slack teams
