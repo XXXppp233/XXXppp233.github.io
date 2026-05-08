@@ -1,0 +1,86 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+import { SITE_TITLE } from '../../consts';
+import { getCategoryHref, getCategoryTerms, mergeStaticTerm } from '../../utils/taxonomy';
+
+const categories = mergeStaticTerm(getCategoryTerms(await getCollection('blog')), 'About');
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`Categories | ${SITE_TITLE}`} description="Browse posts by category." />
+		<style>
+			main {
+				width: 920px;
+			}
+			.archive-head {
+				margin-bottom: 1.4rem;
+				padding: clamp(1.3rem, 4vw, 2.2rem);
+			}
+			.term-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+				gap: 1rem;
+				margin: 0;
+				padding: 0;
+				list-style: none;
+			}
+			.term-grid a {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 1rem;
+				padding: 1rem 1.1rem;
+				color: var(--ink);
+				font-weight: 700;
+				text-decoration: none;
+				background: rgba(247, 247, 241, 0.92);
+				border: 4px solid var(--ink);
+				border-radius: 24px 20px 28px 18px;
+				box-shadow: 6px 7px 0 rgba(var(--ink-rgb), 0.16);
+			}
+			.term-grid a:hover {
+				color: var(--paper-light);
+				background: var(--paint-brown);
+				transform: translateY(-4px) rotate(-0.8deg);
+			}
+			.count {
+				color: var(--paper-light);
+				font-size: 0.78em;
+				background: var(--paint-red);
+				border: 2px solid var(--ink);
+				border-radius: 999px;
+				padding: 0.12em 0.58em;
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section>
+				<div class="archive-head panel">
+					<p class="eyebrow">Categories</p>
+					<h1>Story Shelves</h1>
+					<p>Browse the blog by its main article categories.</p>
+				</div>
+				<ul class="term-grid">
+					{
+						categories.map((category) => (
+							<li>
+								<a href={getCategoryHref(category.name)}>
+									<span>{category.name}</span>
+									<span class="count">{category.count}</span>
+								</a>
+							</li>
+						))
+					}
+				</ul>
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>

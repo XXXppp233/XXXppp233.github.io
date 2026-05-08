@@ -1,0 +1,85 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+import { SITE_TITLE } from '../../consts';
+import { getTagHref, getTagTerms, mergeStaticTerm } from '../../utils/taxonomy';
+
+const tags = mergeStaticTerm(getTagTerms(await getCollection('blog')), 'About');
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`Tags | ${SITE_TITLE}`} description="Browse posts by tag." />
+		<style>
+			main {
+				width: 920px;
+			}
+			.archive-head {
+				margin-bottom: 1.4rem;
+				padding: clamp(1.3rem, 4vw, 2.2rem);
+			}
+			.tag-cloud {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.75rem;
+				margin: 0;
+				padding: 0;
+				list-style: none;
+			}
+			.tag-cloud a {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.55rem;
+				padding: 0.42em 0.82em;
+				color: var(--ink);
+				font-weight: 700;
+				text-decoration: none;
+				background: rgba(247, 247, 241, 0.92);
+				border: 3px solid var(--ink);
+				border-radius: 999px;
+				box-shadow: 4px 5px 0 rgba(var(--ink-rgb), 0.16);
+			}
+			.tag-cloud a:hover {
+				color: var(--paper-light);
+				background: var(--paint-red);
+				transform: translateY(-3px) rotate(-0.8deg);
+			}
+			.count {
+				color: var(--paper-light);
+				font-size: 0.78em;
+				background: var(--paint-brown);
+				border: 2px solid var(--ink);
+				border-radius: 999px;
+				padding: 0.04em 0.48em;
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section>
+				<div class="archive-head panel">
+					<p class="eyebrow">Tags</p>
+					<h1>Ink Labels</h1>
+					<p>Browse smaller topics and recurring ideas across posts.</p>
+				</div>
+				<ul class="tag-cloud">
+					{
+						tags.map((tag) => (
+							<li>
+								<a href={getTagHref(tag.name)}>
+									<span>#{tag.name}</span>
+									<span class="count">{tag.count}</span>
+								</a>
+							</li>
+						))
+					}
+				</ul>
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>

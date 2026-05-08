@@ -1,0 +1,35 @@
+---
+title: Windows共享虚拟网络
+description: Linux 和 MacOS 也可以，但是 Windows 上最为强大
+pubDate: 2 Oct 2023
+category: Network
+tags: 
+- Windows
+- Clash
+heroImage: '../../assets/clashhotspot.jpg'
+
+---
+
+### 前提条件
+Windows 系统至少应为 Windows10，需要共享的虚拟网卡有效如 Clash 的虚拟网卡模式所生成的虚拟网卡
+
+### 步骤
+- 按下 `Win` 键并搜索 `Control Panel` 以打开控制面板
+- `查看依据` 改为 `类别`
+- 点击左侧 `网络和 Internet` 下的 `查看网络状态和任务`
+- 点击左侧 `更改适配器设置`
+- 如果此时无法区分需要共享的虚拟网卡，以 Clash 为例，可以关闭再打开`虚拟网卡模式`时观察变化
+- 此时打开 Windows 自带的热点会发现这里多了一个 `本地连接 * n`
+- 双击需要共享的虚拟网卡再点击`属性`，在新的弹窗里选择`共享`，勾选第一个选项并在下拉菜单中找到 `本地连接 * n` 然后确认保存
+
+### 中英对照表
+| 中文 | English |
+|:---|---:|
+| 查看依据 | View by |
+| 类别 | Category |
+| 网络和 Internet | Network and Internet |
+| 查看网络状态和任务 | View network status and tasks |
+| 更改适配器设置 | Change adapter settings |
+| 虚拟网卡模式 | Tun mode |
+| 属性 | Properties |
+| 共享 | Sharing |

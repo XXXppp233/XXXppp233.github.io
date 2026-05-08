@@ -3,16 +3,18 @@ import { SITE_TITLE } from '../consts';
 import HeaderLink from './HeaderLink.astro';
 ---
 
-<header>
+<header data-header>
 	<nav>
-		<h2><a href="/">{SITE_TITLE}</a></h2>
+		<h2><a href="/" aria-label={`${SITE_TITLE} home`}><span>INK</span>{SITE_TITLE}</a></h2>
 		<div class="internal-links">
 			<HeaderLink href="/">Home</HeaderLink>
 			<HeaderLink href="/blog">Blog</HeaderLink>
+			<HeaderLink href="/categories">Categories</HeaderLink>
+			<HeaderLink href="/tags">Tags</HeaderLink>
 			<HeaderLink href="/about">About</HeaderLink>
 		</div>
 		<div class="social-links">
-			<a href="https://m.webtoo.ls/@astro" target="_blank">
+			<!-- <a href="https://m.webtoo.ls/@astro" target="_blank">
 				<span class="sr-only">Follow Astro on Mastodon</span>
 				<svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32"
 					><path
@@ -38,48 +40,160 @@ import HeaderLink from './HeaderLink.astro';
 						d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"
 					></path></svg
 				>
-			</a>
+			</a> -->
 		</div>
 	</nav>
 </header>
+<script>
+	const header = document.querySelector('[data-header]');
+
+	if (header) {
+		let previousScrollY = window.scrollY;
+		let ticking = false;
+		const revealOffset = 96;
+
+		const updateHeader = () => {
+			const currentScrollY = window.scrollY;
+			const isScrollingDown = currentScrollY > previousScrollY;
+			const isPastIntro = currentScrollY > revealOffset;
+
+			header.classList.toggle('is-hidden', isScrollingDown && isPastIntro);
+			previousScrollY = Math.max(currentScrollY, 0);
+			ticking = false;
+		};
+
+		window.addEventListener(
+			'scroll',
+			() => {
+				if (!ticking) {
+					window.requestAnimationFrame(updateHeader);
+					ticking = true;
+				}
+			},
+			{ passive: true },
+		);
+
+		header.addEventListener('focusin', () => {
+			header.classList.remove('is-hidden');
+		});
+	}
+</script>
 <style>
 	header {
+		position: sticky;
+		top: 0;
+		z-index: 10;
 		margin: 0;
-		padding: 0 1em;
-		background: white;
-		box-shadow: 0 2px 8px rgba(var(--black), 5%);
+		padding: 0.85em 1em 1em;
+		background:
+			radial-gradient(circle at 12% 10%, rgba(255, 255, 255, 0.55), transparent 12rem),
+			rgba(232, 232, 225, 0.9);
+		border-bottom: 4px solid var(--ink);
+		box-shadow: 0 7px 0 rgba(var(--ink-rgb), 0.13);
+		backdrop-filter: blur(10px);
+		transition:
+			transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
+			box-shadow 260ms ease;
+		will-change: transform;
+	}
+	header.is-hidden {
+		box-shadow: none;
+		transform: translateY(calc(-100% - 12px));
 	}
 	h2 {
 		margin: 0;
-		font-size: 1em;
+		font-size: 1rem;
 	}
 
 	h2 a,
 	h2 a.active {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.6em;
+		color: var(--ink);
+		font-weight: 700;
+		letter-spacing: -0.02em;
 		text-decoration: none;
+	}
+	h2 span {
+		display: inline-grid;
+		place-items: center;
+		width: 3.1em;
+		height: 2em;
+		color: var(--paper-light);
+		font-size: 0.7em;
+		letter-spacing: 0.12em;
+		background: var(--paint-red);
+		border: 3px solid var(--ink);
+		border-radius: 50% 46% 52% 44%;
+		box-shadow: 4px 5px 0 rgba(var(--ink-rgb), 0.16);
 	}
 	nav {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
+		gap: 1em;
+		max-width: 1180px;
+		margin: 0 auto;
 	}
 	nav a {
-		padding: 1em 0.5em;
-		color: var(--black);
-		border-bottom: 4px solid transparent;
+		padding: 0.65em 0.8em;
+		color: var(--ink);
+		border: 3px solid transparent;
+		border-radius: 999px 820px 930px 760px;
 		text-decoration: none;
 	}
+	nav a:hover {
+		color: var(--ink);
+		background: rgba(247, 247, 241, 0.68);
+		border-color: var(--ink);
+		transform: translateY(-2px) rotate(-1deg);
+	}
 	nav a.active {
+		color: var(--paper-light);
 		text-decoration: none;
-		border-bottom-color: var(--accent);
+		background: var(--paint-brown);
+		border-color: var(--ink);
+		box-shadow: 4px 5px 0 rgba(var(--ink-rgb), 0.16);
+	}
+	.internal-links {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.35em;
 	}
 	.social-links,
 	.social-links a {
 		display: flex;
 	}
+	.social-links {
+		gap: 0.3em;
+	}
+	.social-links a {
+		color: var(--ink);
+	}
 	@media (max-width: 720px) {
+		header {
+			padding: 0.75em 0.5em;
+		}
+		nav {
+			align-items: flex-start;
+			flex-direction: column;
+		}
+		.internal-links {
+			width: 100%;
+			justify-content: space-between;
+		}
+		nav a {
+			padding: 0.55em 0.7em;
+		}
 		.social-links {
 			display: none;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		header {
+			transition: none;
 		}
 	}
 </style>

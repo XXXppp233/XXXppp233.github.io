@@ -6,10 +6,9 @@ import Footer from '../../components/Footer.astro';
 import FormattedDate from '../../components/FormattedDate.astro';
 import Header from '../../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
+import { getCategoryHref, getTagHref, sortPostsByDate } from '../../utils/taxonomy';
 
-const posts = (await getCollection('blog')).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
-);
+const posts = sortPostsByDate(await getCollection('blog'));
 ---
 
 <!doctype html>
@@ -18,66 +17,124 @@ const posts = (await getCollection('blog')).sort(
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 		<style>
 			main {
-				width: 960px;
+				width: 1120px;
+			}
+			.archive-head {
+				margin-bottom: 1.4rem;
+				padding: clamp(1.3rem, 4vw, 2.2rem);
+			}
+			.archive-head > * {
+				position: relative;
+				z-index: 1;
+			}
+			.archive-head p:not(.eyebrow) {
+				max-width: 48rem;
+				color: rgb(var(--gray));
 			}
 			ul {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 2rem;
+				display: grid;
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				gap: 1rem;
 				list-style-type: none;
 				margin: 0;
 				padding: 0;
 			}
 			ul li {
-				width: calc(50% - 1rem);
+				position: relative;
+				overflow: hidden;
+				background:
+					radial-gradient(circle at 16% 12%, rgba(255, 255, 255, 0.52), transparent 9rem),
+					linear-gradient(145deg, rgba(247, 247, 241, 0.96), rgba(30, 30, 30, 0.07));
+				border: 4px solid var(--ink);
+				border-radius: 28px 22px 34px 20px;
+				box-shadow: 7px 8px 0 rgba(var(--ink-rgb), 0.16);
 			}
 			ul li * {
 				text-decoration: none;
 				transition: 0.2s ease;
 			}
 			ul li:first-child {
-				width: 100%;
+				grid-column: 1 / -1;
 				margin-bottom: 1rem;
-				text-align: center;
 			}
 			ul li:first-child img {
 				width: 100%;
 			}
 			ul li:first-child .title {
-				font-size: 2.369rem;
+				font-size: clamp(2rem, 5vw, 3.6rem);
 			}
 			ul li img {
-				margin-bottom: 0.5rem;
-				border-radius: 12px;
-			}
-			ul li a {
 				display: block;
+				width: 100%;
+				margin-bottom: 0;
+				border: 0;
+				border-bottom: 4px solid var(--ink);
+				border-radius: 0;
+				filter: sepia(0.15) saturate(0.86) contrast(1.05);
+			}
+			.post-link {
+				display: block;
+				color: inherit;
+			}
+			.card-copy {
+				padding: 1.1rem 1.2rem 1.25rem;
 			}
 			.title {
 				margin: 0;
-				color: rgb(var(--black));
-				line-height: 1;
+				color: var(--ink);
+				line-height: 1.05;
 			}
 			.date {
-				margin: 0;
+				margin: 0.7em 0 0;
 				color: rgb(var(--gray));
+				font-size: 0.86em;
+				font-weight: 700;
+				letter-spacing: 0.05em;
+				text-transform: uppercase;
 			}
-			ul li a:hover h4,
-			ul li a:hover .date {
-				color: rgb(var(--accent));
+			.meta-links {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.45rem;
+				margin-top: -0.35rem;
+				padding: 0 1.2rem 1.25rem;
+			}
+			.meta-links a {
+				display: inline-flex;
+				width: fit-content;
+				padding: 0.2em 0.62em;
+				color: var(--ink);
+				font-size: 0.72em;
+				font-weight: 700;
+				line-height: 1.35;
+				background: rgba(247, 247, 241, 0.72);
+				border: 2px solid rgba(var(--ink-rgb), 0.62);
+				border-radius: 999px;
+			}
+			.meta-links .category {
+				color: var(--paper-light);
+				background: var(--paint-brown);
+				border-color: var(--ink);
+			}
+			.post-link:hover h4,
+			.post-link:hover .date {
+				color: var(--paint-red);
+			}
+			ul li:hover {
+				transform: translateY(-5px) rotate(-0.7deg);
+				box-shadow: 10px 12px 0 rgba(var(--ink-rgb), 0.18);
+				transition: 0.2s ease;
 			}
 			ul a:hover img {
-				box-shadow: var(--box-shadow);
+				filter: sepia(0.05) saturate(1) contrast(1.08);
 			}
 			@media (max-width: 720px) {
 				ul {
-					gap: 0.5em;
-				}
-				ul li {
-					width: 100%;
-					text-align: center;
+					grid-template-columns: 1fr;
+					gap: 0.8em;
 				}
 				ul li:first-child {
+					grid-column: auto;
 					margin-bottom: 0;
 				}
 				ul li:first-child .title {
@@ -90,19 +147,36 @@ const posts = (await getCollection('blog')).sort(
 		<Header />
 		<main>
 			<section>
+				<div class="archive-head panel">
+					<p class="eyebrow">Picture archive</p>
+					<h1>Story Reels</h1>
+					<p>Articles framed like painted title cards: warm paper, bold ink, soft washes, and room for your own hand-picked artwork.</p>
+				</div>
 				<ul>
 					{
 						posts.map((post) => (
 							<li>
-								<a href={`/blog/${post.id}/`}>
+								<a class="post-link" href={`/blog/${post.id}/`}>
 									{post.data.heroImage && (
 										<Image width={720} height={360} src={post.data.heroImage} alt="" />
 									)}
-									<h4 class="title">{post.data.title}</h4>
-									<p class="date">
-										<FormattedDate date={post.data.pubDate} />
-									</p>
+									<div class="card-copy">
+										<h4 class="title">{post.data.title}</h4>
+										<p class="date">
+											<FormattedDate date={post.data.pubDate} />
+										</p>
+									</div>
 								</a>
+								<div class="meta-links">
+									{post.data.category && (
+										<a class="category" href={getCategoryHref(post.data.category)}>
+											{post.data.category}
+										</a>
+									)}
+									{post.data.tags.map((tag) => (
+										<a href={getTagHref(tag)}>#{tag}</a>
+									))}
+								</div>
 							</li>
 						))
 					}

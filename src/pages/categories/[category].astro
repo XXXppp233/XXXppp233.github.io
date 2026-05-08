@@ -1,0 +1,93 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+import PostArchive from '../../components/PostArchive.astro';
+import { SITE_TITLE } from '../../consts';
+import { findTermBySlug, getCategoryTerms, mergeStaticTerm, sortPostsByDate, slugifyTerm } from '../../utils/taxonomy';
+
+export async function getStaticPaths() {
+	const posts = await getCollection('blog');
+	return mergeStaticTerm(getCategoryTerms(posts), 'About').map((category) => ({
+		params: { category: category.slug },
+		props: { category },
+	}));
+}
+
+const { category } = Astro.props;
+const posts = sortPostsByDate(
+	(await getCollection('blog')).filter((post) => post.data.category && slugifyTerm(post.data.category) === category.slug),
+);
+const includesAbout = category.slug === slugifyTerm('About');
+const term =
+	findTermBySlug(includesAbout ? mergeStaticTerm(getCategoryTerms(posts), 'About') : getCategoryTerms(posts), category.slug) ??
+	category;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead
+			title={`${term.name} | Categories | ${SITE_TITLE}`}
+			description={`Posts in the ${term.name} category.`}
+		/>
+		<style>
+			main {
+				width: 920px;
+			}
+			.archive-head {
+				margin-bottom: 1.4rem;
+				padding: clamp(1.3rem, 4vw, 2.2rem);
+			}
+			.archive-head p:not(.eyebrow) {
+				max-width: 48rem;
+				color: rgb(var(--gray));
+			}
+			.page-archive {
+				margin: 1rem 0 0;
+				padding: 0;
+				list-style: none;
+			}
+			.page-archive a {
+				display: block;
+				padding: 1rem 1.2rem;
+				color: var(--ink);
+				font-size: clamp(1.4rem, 4vw, 2.4rem);
+				font-weight: 700;
+				text-decoration: none;
+				background: rgba(247, 247, 241, 0.92);
+				border: 4px solid var(--ink);
+				border-radius: 28px 22px 34px 20px;
+				box-shadow: 7px 8px 0 rgba(var(--ink-rgb), 0.16);
+			}
+			.page-archive a:hover {
+				color: var(--paint-red);
+				transform: translateY(-4px) rotate(-0.4deg);
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section>
+				<div class="archive-head panel">
+					<p class="eyebrow">Category</p>
+					<h1>{term.name}</h1>
+					<p>{term.count} {term.count === 1 ? 'post' : 'posts'} in this category.</p>
+				</div>
+				<PostArchive posts={posts} />
+				{
+					includesAbout && (
+						<ul class="page-archive">
+							<li>
+								<a href="/about/">About</a>
+							</li>
+						</ul>
+					)
+				}
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>

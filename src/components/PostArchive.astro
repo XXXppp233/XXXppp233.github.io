@@ -1,0 +1,146 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import FormattedDate from './FormattedDate.astro';
+import { getCategoryHref, getTagHref } from '../utils/taxonomy';
+
+interface Props {
+	posts: CollectionEntry<'blog'>[];
+}
+
+const { posts } = Astro.props;
+---
+
+<ul class="post-archive">
+	{
+		posts.map((post) => (
+			<li>
+				<a class="post-link" href={`/blog/${post.id}/`}>
+					{post.data.heroImage && <Image width={360} height={200} src={post.data.heroImage} alt="" />}
+					<div>
+						<h2>{post.data.title}</h2>
+						<p class="date">
+							<FormattedDate date={post.data.pubDate} />
+						</p>
+						<p>{post.data.description}</p>
+					</div>
+				</a>
+				<div class="meta-links">
+					{post.data.category && (
+						<a class="category" href={getCategoryHref(post.data.category)}>
+							{post.data.category}
+						</a>
+					)}
+					{post.data.tags.map((tag) => (
+						<a href={getTagHref(tag)}>#{tag}</a>
+					))}
+				</div>
+			</li>
+		))
+	}
+</ul>
+
+<style>
+	.post-archive {
+		display: grid;
+		gap: 1rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.post-archive li {
+		overflow: hidden;
+		background:
+			radial-gradient(circle at 16% 12%, rgba(255, 255, 255, 0.52), transparent 9rem),
+			linear-gradient(145deg, rgba(247, 247, 241, 0.96), rgba(30, 30, 30, 0.07));
+		border: 4px solid var(--ink);
+		border-radius: 28px 22px 34px 20px;
+		box-shadow: 7px 8px 0 rgba(var(--ink-rgb), 0.16);
+	}
+	.post-link {
+		display: grid;
+		grid-template-columns: minmax(180px, 0.34fr) minmax(0, 1fr);
+		gap: 1rem;
+		align-items: stretch;
+		color: inherit;
+		text-decoration: none;
+	}
+	.post-link img {
+		width: 100%;
+		height: 100%;
+		min-height: 12rem;
+		object-fit: cover;
+		border: 0;
+		border-right: 4px solid var(--ink);
+		border-radius: 0;
+		filter: sepia(0.15) saturate(0.86) contrast(1.05);
+	}
+	.post-link div {
+		padding: 1.1rem 1.2rem 0.25rem 0;
+	}
+	.post-link h2 {
+		margin-bottom: 0.3rem;
+		font-size: clamp(1.5rem, 4vw, 2.6rem);
+	}
+	.post-link p {
+		margin-bottom: 0.65rem;
+	}
+	.date {
+		color: rgb(var(--gray));
+		font-size: 0.78em;
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+	}
+	.meta-links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.45rem;
+		padding: 0 1.2rem 1.15rem;
+	}
+	.post-link + .meta-links {
+		margin-top: -0.35rem;
+		padding-left: calc(34% + 1rem);
+	}
+	.meta-links a {
+		display: inline-flex;
+		padding: 0.2em 0.62em;
+		color: var(--ink);
+		font-size: 0.72em;
+		font-weight: 700;
+		line-height: 1.35;
+		text-decoration: none;
+		background: rgba(247, 247, 241, 0.72);
+		border: 2px solid rgba(var(--ink-rgb), 0.62);
+		border-radius: 999px;
+	}
+	.meta-links .category {
+		color: var(--paper-light);
+		background: var(--paint-brown);
+		border-color: var(--ink);
+	}
+	.post-archive li:hover {
+		transform: translateY(-4px) rotate(-0.4deg);
+		box-shadow: 10px 12px 0 rgba(var(--ink-rgb), 0.18);
+		transition: 0.2s ease;
+	}
+	.post-link:hover h2,
+	.meta-links a:hover {
+		color: var(--paint-red);
+	}
+	@media (max-width: 720px) {
+		.post-link {
+			grid-template-columns: 1fr;
+		}
+		.post-link img {
+			border-right: 0;
+			border-bottom: 4px solid var(--ink);
+		}
+		.post-link div {
+			padding: 1rem 1rem 0.1rem;
+		}
+		.post-link + .meta-links {
+			padding-left: 1rem;
+		}
+	}
+</style>
