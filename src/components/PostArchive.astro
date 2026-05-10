@@ -16,7 +16,7 @@ const { posts } = Astro.props;
 		posts.map((post) => (
 			<li>
 				<a class="post-link" href={`/blog/${post.id}/`}>
-					{post.data.heroImage && <Image width={360} height={200} src={post.data.heroImage} alt="" />}
+					{post.data.heroImage && <Image width={360} height={180} src={post.data.heroImage} alt="" />}
 					<div>
 						<h2>{post.data.title}</h2>
 						<p class="date">
@@ -62,21 +62,24 @@ const { posts } = Astro.props;
 		grid-template-columns: minmax(180px, 0.34fr) minmax(0, 1fr);
 		gap: 1rem;
 		align-items: stretch;
+		padding: 1rem;
 		color: inherit;
 		text-decoration: none;
 	}
 	.post-link img {
-		width: 100%;
+		align-self: start;
+		width: auto;
+		aspect-ratio: 2 / 1;
 		height: 100%;
-		min-height: 12rem;
+		min-height: 0;
 		object-fit: cover;
-		border: 0;
-		border-right: 4px solid var(--ink);
-		border-radius: 0;
+		background: rgba(247, 247, 241, 0.56);
+		border: 4px solid var(--ink);
+		border-radius: 24px 18px 28px 16px;
 		filter: sepia(0.15) saturate(0.86) contrast(1.05);
 	}
 	.post-link div {
-		padding: 1.1rem 1.2rem 0.25rem 0;
+		padding: 0.1rem 0.2rem 0.25rem 0;
 	}
 	.post-link h2 {
 		margin-bottom: 0.3rem;
@@ -100,7 +103,7 @@ const { posts } = Astro.props;
 	}
 	.post-link + .meta-links {
 		margin-top: -0.35rem;
-		padding-left: calc(34% + 1rem);
+		padding-left: calc(34% + 2rem);
 	}
 	.meta-links a {
 		display: inline-flex;
@@ -133,11 +136,10 @@ const { posts } = Astro.props;
 			grid-template-columns: 1fr;
 		}
 		.post-link img {
-			border-right: 0;
-			border-bottom: 4px solid var(--ink);
+			width: 100%;
 		}
 		.post-link div {
-			padding: 1rem 1rem 0.1rem;
+			padding: 0;
 		}
 		.post-link + .meta-links {
 			padding-left: 1rem;

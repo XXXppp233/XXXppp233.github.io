@@ -1,3 +1,4 @@
+@import 'katex/dist/katex.min.css';
 @font-face {
 	font-family: "Atkinson Hyperlegible";
 	src: url("../assets/fonts/atkinson-regular.woff") format("woff");
