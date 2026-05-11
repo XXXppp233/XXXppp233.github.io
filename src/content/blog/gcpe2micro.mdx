@@ -1,0 +1,113 @@
+---
+title: Google Cloud e2 Micro 可用性探究
+description: 免费的东西谁不想要呢
+pubDate: 11 May 2026
+category: Cloud
+tags: 
+- Google Cloud
+- Free
+- low cost
+- 虚拟机
+- Linux
+heroImage: '../../assets/clashhotspot.jpg'
+
+---
+
+白嫖 Google Cloud(GCP) 的免费 **e2-micro**，其配置一般如下
+| 属性 | 规格 |
+|:---|---:|
+| vCPU | 0.25~2 Intel Broadwell |
+| 内存 | 1 GB |
+| 磁盘 | 30 GB 标准持久磁盘 |
+| 网络 | 200GB 标准层级出站 |
+| Ops Agent | Optional |
+
+所谓`标准持久磁盘`，其实就是机械硬盘，IOPS 更是一言难尽。GCP 官方并没有给出 **e2-micro** 具体的指标，但是给出了 [$e2-medium^1$](#参考) 的指标，而 **e2-micro** 的配置是 **e2-medium** 的四分之一，所以可以推测 **e2-micro** 的磁盘性能大约是 **e2-medium** 的四分之一，即 **最大** IOPS 读取不超过 **250**。实际上根据容量大小的不同，IOPS 会大打折扣。
+
+所谓`标准网络层级`，即访问该虚拟机的流量会先经过互联网到对应机房，再连接到虚拟机，而**高级层级**即是先找到最近的 GCP 节点，再经过 GCP 的骨干网连接到虚拟机。作为对比，高级层级在 Microsoft Azure 中被称为 **Microsoft 首选路由**，普通层级则为 **Internet 首选路由**，且都适用于 Azure 的 100GB 出站数据传输。值得一提的是，GCP 的高级层级仅在美国区域拥有 1GB 的免费数据传输额度，且**不适用中国大陆方向**，GCP 的流量定价非常细致，到中国大陆的高级层级流量价格为 [$ 0.23USD/GB^2 $](#参考)，不过最近 GCP 精简了的标准层及定价模型，不再额外区分中国，非洲，澳大利亚等区域了，但是现在的价格相较于 Azure 和 AWS 仍旧没有优势。
+
+标准网络层及到中国大陆的连接质量一般，截至目前，机房到用户中间的 **Internet** 是 `Tata 通信`，中国电信布局国际网络较早，与 Tata 通信拥有大量的对等互联，所以中国电信的访问质量还算可以，中国联通和中国移动就只能看运气了。
+
+所谓的 Intel Broadwell 说白了就是 E5 洋垃圾，在 CPU Benchmark 上可以查到单线程分数为 2065，性能只能说很一般。再搭配上共享 IOPS 的机械硬盘，**e2-micro** 几乎难以承担任何负载，即使是使用 Vscode 连接到它都会导致崩溃。但这并不代表它一无是处，e 系列的所有虚拟机标称都是 Intel Broadwell，但实际上你可以开出来架构为 AMD Rome 甚至是 AMD Milan，综合表现会强大非常多。以下是使用 sysbench 测试的结果，其中的 10GB SSD 指的是 GCP 的 `平衡持久磁盘`，表中同时给出了 Azure 的同规格虚拟机测试结果，其中 Azure B2pts v2 为 Arm Neoverse V2 架构，Azure B2ats v2 为 AMD Milan 的 EPYC 7763
+| 架构 | 磁盘 | events per second |
+|:---|:---:|---:|
+| AMD Rome | 10GB SSD | 890.42 |
+| AMD Rome | 30GB HDD | 699.63 |
+| Intel Broadwell | 10GB SSD | 302.53 |
+| Intel Broadwell | 30GB HDD | 324.70 |
+| Azure B2pts v2 | 64GB P6 SSD | 2539.95 |
+| Azure B2ats v2 | 64GB P6 SSD | 1585.44 |
+
+表中所有机型的价格都在每月 6 美元左右，Arm 性能强，x86 生态好。那么 Azure 确实比 GCP 强吗？是的，Azure 的虚拟机确实更强，而且 pts 和 ats 也是 Azure 最热门的机型，在每个区域的需求都很高。
+
+GCP 声称 e2 系列可以开出 AMD Rome 和 AMD Milan 架构的虚拟机，但是 e 系列所有规格在创建时都无法指定 CPU 架构，只能通过多次创建 e2-micro 来尝试。用鼠标来回操作有点麻烦，可以设置好条件后复制创建按钮右侧的的 `等效代码` 来更加方便地创建虚拟机，也可以使用虚拟机模板。
+
+## 最高性价比实践
+在开出 AMD 系列的 CPU 之后，可以尝试为其添加一个 10GB 的平衡持久磁盘作为启动盘，价格为每月 1USD，但是带来的提升是立竿见影的，同时可以把 30GB 的机械硬盘挂在上去作为数据盘，最终就会得到一个价格 1USD 每月的拥有 2vCPU AMD Rome + 1GB 内存 + 40GB 存储的虚拟机，这个性价比是全网独一档的，在 GCP 之外的地方有这种性价比的都被称为灵车了。
+### SSH
+首先需要生成一个 ssh 密钥对，需要注意的是 GCP 会自动管理 SSH 密钥，但是有个要求是密钥的邮箱必须有权限访问该虚拟机，权限的配置较为复杂，个人建议直接使用自己的 Gmail 创建密钥对，然后在 Metadata 中添加公钥
+```bash
+cd ~/.ssh
+ssh-keygen -t ed25519 -C "your_gmail@gmail.com"
+```
+弹出的第一个输入框可以输入该密钥的名字，其他的直接回车跳过。使用以下命令可以查看公钥内容
+```bash
+cat ~/.ssh/ed25519.pub
+```
+添加密钥到 Metadata 中，注意 ssh-keys 后面可以跟多行字符串，每行都应是完整的公钥内容，且会覆盖之前的内容，所以推荐去控制台添加。
+```bash
+gcloud compute project-info add-metadata --metadata-from-file ssh-keys=${ed25519.pub}
+```
+### 挂载硬盘
+```bash
+lsblk   # 查看磁盘列表
+NAME    MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+sda       8:0    0   30G  0 disk            # 初始的 30GB 标准持久磁盘
+sdb       8:16   0   10G  0 disk
+├─sdb1    8:17   0  9.9G  0 part /
+├─sdb14   8:30   0    3M  0 part
+└─sdb15   8:31   0  124M  0 part /boot/efi
+
+sudo blkid /dev/sda    # 查看 sda 的 UUID
+dev/sda: UUID="${sda-uuid}" BLOCK_SIZE="4096" TYPE="ext4"
+
+mkdir /mnt/data    # 创建挂载点
+echo "UUID=${sda-uuid} /mnt/data ext4 defaults 0 2"
+systemctl daemon-reload    # 重新加载 fstab
+mount -a    # 挂载所有磁盘
+
+lsblk    # 查看挂载结果
+NAME    MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+sda       8:0    0   30G  0 disk /mnt/data
+sdb       8:16   0   10G  0 disk
+├─sdb1    8:17   0  9.9G  0 part /
+├─sdb14   8:30   0    3M  0 part
+└─sdb15   8:31   0  124M  0 part /boot/efi
+
+df -h    # 查看磁盘使用情况
+Filesystem      Size  Used Avail Use% Mounted on
+udev            446M     0  446M   0% /dev
+tmpfs            97M  476K   97M   1% /run
+/dev/sdb1       9.7G  2.3G  6.9G  25% /
+tmpfs           485M     0  485M   0% /dev/shm
+tmpfs           5.0M     0  5.0M   0% /run/lock
+/dev/sdb15      124M   12M  113M  10% /boot/efi
+/dev/sda         30G   24K   30G   1% /mnt/data
+tmpfs            97M     0   97M   0% /run/user/1000
+```
+
+
+
+
+## 中英对照表
+| 中文 | English |
+|:---|---:|
+| 标准持久磁盘 | Standard Persistent Disk |
+| 平衡持久磁盘 | Balanced Persistent Disk |
+| 标准网络层级 | Standard Network Tier |
+| 高级层级 | Premium Network Tier |
+| Tata 通信 | Tata Communications |
+
+## 参考
+1. [e2-medium 磁盘性能](https://docs.cloud.google.com/compute/docs/disks/performance?hl=zh-cn#pd-standard_4)
+2. [Google Cloud 流量定价](https://cloud.google.com/vpc/network-pricing?hl=zh-cn#egress-pricing)
