@@ -1,0 +1,129 @@
+---
+title: Redis
+description: 高性能缓存
+pubDate: 19 May 2026
+category: Cloud
+tags: 
+- golang
+- redis
+- linux
+heroImage: '../../assets/clashhotspot.jpg'
+---
+
+redis 是存储在内存中的键值对，在面对高并发时通常能提供相当可观的性能，但是断电或者程序突然崩溃的话就什么都没有了，所以大多数时候用来缓存数据库中的信息。
+### 安装 Redis
+许多 Linux 发行版均提供了 Redis 的软件包，这里以 Debian/Ubuntu 为例
+```bash
+sudo apt install redis
+redis-server # 启动服务端
+```
+软件启动后会监听 `6379` 端口，如果直接对这个端口进行访问，服务端会输出安全警告：
+
+Possible SECURITY ATTACK detected. It looks like somebody is sending POST or Host: commands to Redis. This is likely due to an attacker attempting to use Cross Protocol Scripting to compromise your Redis instance. Connection aborted.
+
+Redis 提供了 `redis-cli` 来连接
+```bash
+redis-cli               # 默认会连接到本地的 redis-server
+127.0.0.1:6379>         # 已连接
+127.0.0.1:6379>flushall # 清空所有数据
+127.0.0.1:6379>keys *   # 查询所有 key
+(empty array)
+```
+### 基础数据
+| 命令 | 作用 |
+|:---|---:|
+|set| 创建 Key: Value 映射 |
+|get| 查找 Key 对应的 Value，失败返回 (nil)|
+|del| 删除 Key 及其 Value|
+|exists| 如果该 Key存在，返回 1 |
+
+查询无效的 Key 返回 (nil)，缓存当然应该存在一定的有效期
+### 有效期
+| 命令 | 作用 |
+|:---|---:|
+|ttl| 检查剩余有效期|
+|expire | 指定有效期|
+|setex | 在创建时指定有效期|
+### 列表数据
+| 命令 | 作用 |
+|:---|---:|
+|lpush| list push，当 Key 不存在时会创建一个新的|
+|lrange| 列出指定范围的数据，例如 lrange Key 0 -1|
+|lpop| 移除列表的第一个数据 |
+|rpop| 移除列表的最后一个数据 |
+
+lpush 默认在第一个位置插入数据，查询空的列表返回 (empty array)
+### 集合
+集合与列表类似，但是不存在重复的值
+| 命令 | 作用 |
+|:---|---:|
+|sadd| 类似 lpush|
+|smembers| 返回指定集合的内容，无法指定范围|
+|srem| set rem[ove] 用以移除指定元素|
+
+查询空的集合亦返回 (empty array)
+### Hash
+| 命令 | 作用 |
+|:---|---:|
+|hset| 与 set 类似|
+|hget| 与 get 类似|
+|hdel| 与 del 类似|
+|hexists|与 exists 类似|
+
+Hash 允许不同格式的数据进行嵌套，类似 JSON 那样
+
+作为缓存的话，不需要在 redis 中修改数据，应为数据设定过期时间或者定时 flushall，使用代码操作的过程与 cli 没有两样
+
+```go
+package main
+
+import (
+        "fmt"
+        "context"
+        "time"
+
+        "github.com/go-redis/redis/v8"
+)
+
+
+func main() {
+    fmt.Println("create client")
+    client := redis.NewClient(&redis.Options{
+        Addr: "localhost: 6379",
+        Password: "",
+        DB: 0,
+    })
+    
+    ping, err := client.Ping(context.Background()).Result()
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    fmt.Println(ping)
+
+    err = client.Set(context.Background(), "name", "Elliot", time.Second*10).Err()
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    keys, err := client.Keys(context.Background(), "*").Result()
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    fmt.Println(keys)
+    
+    name, err := client.Get(context.Background(), "name").Result()
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    fmt.Println(name)
+}
+```
+
+
+
+
+
+

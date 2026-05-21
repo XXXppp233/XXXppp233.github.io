@@ -1,0 +1,84 @@
+---
+title: Golang init 函数
+description: 该函数会在 main() 之前执行
+pubDate: 18 May 2026
+category: 算法
+tags: 
+- golang
+- linux
+heroImage: '../../assets/clashhotspot.jpg'
+---
+
+
+`main()` 函数只能存在一个，但是 `init()` 函数允许存在多个，且按照出现的先后顺序执行，单文件如下
+```go
+func init(){
+	fmt.Println("init")
+}
+
+func main() {
+	fmt.Println("main")
+}
+
+func init(){
+	fmt.Println("ini")
+}
+
+```
+其输出结果为
+```bash
+init
+ini
+main
+```
+
+当路径下右多个文件同时包含了 `init()` 时，会按照顺序执行每个文件的 `init()`，如下
+```bash
+ls	# 当前路径内容
+1.go  2.go  go.mod  main.go  t	# t 为 go build 后生成的二进制文件
+cat 1.go	# 查看 1.go 的内容
+package main
+
+import "fmt"
+
+func init(){
+        fmt.Println(1)
+}
+cat 2.go	# 查看 2.go 的内容
+package main
+
+import "fmt"
+
+func init(){
+        fmt.Println(2)
+}
+go mod init t	# 初始化 go.mod
+go build	# 构建可执行文件
+./t 		# 运行
+1
+2
+init
+ini
+main
+```
+
+所以在 leetcode 上可以利用这一特性在内存使用上轻松击败佰分之佰
+```go
+func init() {
+    debug.SetMemoryLimit(3 << 20)
+ }
+```
+`<<` 是二进制移位运算符，`3<<20` 等价于 `3*2^20`，即限制内存使用为 `3Mb`。代价就是程序运行会被频繁的 `Garbage Collector(GC)` 拖慢速度，单在 leetcode 上，在算法优化到 0ms 时，不妨试试这个邪修。
+
+
+
+
+
+
+
+
+
+
+
+
+
