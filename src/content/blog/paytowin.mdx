@@ -12,6 +12,8 @@ tags:
 heroImage: '../../assets/clashhotspot.jpg'
 ---
 
+在你为国际服游戏充值之前，可以尝试办理一张 UnionPay 之外的卡片
+
 ### Credit & Debit Card
 中国大陆申请`信用卡`的门槛并不高，只要有稳定的收入就能申请。绝大多数银行都有提供 Visa, Mastercard 的信用卡，甚至可以网申线上激活，这里不再过多赘述。
 
@@ -23,6 +25,16 @@ heroImage: '../../assets/clashhotspot.jpg'
 #### 卡组织
 前文有提到的银联, Visa, Mastercard, Amex 和 JCB 等都是卡组织，卡组织在跨境交易中帮你处理了货币的转换，需要商家主动接入，且商家需要支付手续费。银联其实和 Visa, Mastercard, Amex 和 JCB 等一样都具有支付外币的能力，只是接入银联网络的商家并不多。
 
+#### 目前可以公开的信息
+- [Visa Platinum](https://www.visa.cn/pay-with-visa/find-a-card/visa-platinum.html)
+- [Visa Signature](https://www.visa.cn/pay-with-visa/find-a-card/visa-signature.html)
+- [Visa Infinite](https://www.visa.cn/pay-with-visa/find-a-card/visa-infinite.html)
+- [Amex centurion](https://www.americanexpress.com.cn/centurion)
+- [Amex blue box](https://www.americanexpress.com.cn/blue-box)
+- [Amex centurion **debit**](https://www.americanexpress.com.cn/centurion-debit)
+- [Amex blue box **debit**](https://www.americanexpress.com.cn/blue-box-debit)
+- [JCB](https://www.global.jcb/en/products/cards/issuer/index.html)
+
 #### Paypal
 有少量商家也接入了 Paypal 这样的第三方支付平台。但是 Paypal 在中国遵纪守法，需要人工审核你提交的证件，需要等待的时间往往比去银行办卡更久，而且需要你已经持有银行卡。
 
@@ -32,10 +44,12 @@ heroImage: '../../assets/clashhotspot.jpg'
 以外币结算，这是相当不方便的方式，因为最终需要消费者购买外汇来支付。
 
 #### 付款信息
-中国大陆发行的非银联卡片在付款时往往只要名字和安全码对了就能完成支付，不会额外验证地址和邮编。
+中国大陆发行的非银联卡片在付款时往往只验证安全码，偶尔会验证持卡人姓名，不会额外验证地址和邮编。
 
 #### 发卡地区
-储蓄卡和信用卡的前 6 位数字是卡 Bin，可以用来判断发卡地区。由于税务和定价不同，许多商家会核验发卡地区以导致中国发行的卡片无法使用。网上直接查找的数据库信息可能并不准确，可以使用 stripe 的商用数据库来获得较为准确的信息。
+储蓄卡和信用卡的前 6 位数字是卡 Bin，可以用来判断发卡地区。由于税务和定价不同，许多商家会核验发卡地区以导致中国发行的卡片无法使用。Mastercard 的查询接口是唯一不需要验证的，其他则大多数要注册为开发者。
+- [Mastercard Developer](https://developer.mastercard.com/product/bin-lookup)
+- [Visa Developer](https://developer.visa.com/capabilities/visa-bin-attribute-sharing-service/docs-how-to#section3:~:text=will%20look%20like%3A-,Using%20Single%20BIN%20Lookup%20%2D%20Acquirer%20API,-This%20API%20allows)
 
 ### 支付宝 & 微信支付
 支持支付宝的商家比 Paypal 多得多，如果这个商家接受来自中国大陆的消费者的话。支付宝拥有更低的门槛，甚至不需要提供银行卡信息。
