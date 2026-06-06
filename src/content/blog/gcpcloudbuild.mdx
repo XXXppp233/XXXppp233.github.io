@@ -1,0 +1,46 @@
+---
+title: GCP Cloud Build Log 问题
+description: "null"
+pubDate: 5 Jun 2026
+category: Cloud
+tags: 
+- Google Cloud
+- Cloud Build
+- CI/CD
+heroImage: '../../assets/clashhotspot.jpg'
+---
+
+最近重置了之前的福州麻将，原本要部署到 Azure Container App 上，没想到 Azure 冷启动这么慢，现在准备部署一个版本到 Cloud Run 上，需要先设置一个 Cloud Build 触发器，GCP 选择在自己的平台进行构建而不是让 Github Action 代劳，因为它提供一种独有的构建环境，支持比 Dockerfile 更复杂的配置内容，就包括我遇到的这个问题。
+
+填完表单设置好触发器之后，点击 `Run Trigger` 就会弹出一个错误提示
+```
+Your build failed to run: if 'build.service_account' is specified, the build must either (a) specify 'build.logs_bucket', (b) use the REGIONAL_USER_OWNED_BUCKET build.options.default_logs_bucket_behavior option, or (c) use either CLOUD_LOGGING_ONLY / NONE logging options: invalid argument 指定 NONE logging
+```
+- a. `specify` 'build.logs_bucket'
+- b. `use` the REGIONAL_USER_OWNED_BUCKET build.options.default_logs_bucket_behavior option
+- c. `use` either CLOUD_LOGGING_ONLY / NONE logging options
+但是面板上并没有给出任何选项以进行 `specify` 和 `use`，原因就是因为这几个配置项只存在与 `cloudbuild.yaml` 上，那我现在要按照现有的 Dockerfile 重写一份 `cloudbuild.yaml` 吗？并不是，GCP 上存在一种隐晦的方法。
+
+在同一项目中打开 Cloud Shell
+```bash
+gcloud builds triggers describe YOUR_TRIGGER_NAME_OR_ID --region=YOUR_REGION --format=yaml > trigger.yaml
+```
+然后编辑这个 `trigger.yaml` 文件，在 `options` 字段下指定日志选项为 `CLOUD_LOGGING_ONLY` 或者 `NONE`
+```yaml
+options:
+  logging: CLOUD_LOGGING_ONLY
+```
+然后再导入回去
+```bash
+gcloud builds triggers import --source=trigger.yaml --region=YOUR_REGION
+```
+这显然是一种刻意的，不友好的设计
+
+
+
+
+
+
+
+
+

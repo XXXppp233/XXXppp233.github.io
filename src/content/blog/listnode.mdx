@@ -1,0 +1,223 @@
+---
+title: 链表基本操作
+description: 遍历，反转
+pubDate: 27 May 2026
+category: 算法
+tags: 
+- Golang
+- ListNode
+heroImage: '../../assets/clashhotspot.jpg'
+---
+
+链表定义通常如下，相较于现代语言中较为灵活的切片来说没有任何优势
+```go
+type ListNode struct {
+    Val     int
+    Next    *ListNode
+}
+```
+### 遍历
+```go
+func ListLoop(head *ListNode){
+    dummy := head
+    for dummy != nil {
+        fmt.Println(dummy.Val)
+        dummy = dummy.Next
+    }
+}
+```
+#### 去重
+```go
+func deleteDuplicates(head *ListNode) *ListNode {
+	hm := make(map[int]bool)
+	curr := &ListNode{Next: head}
+	for curr != nil && curr.Next != nil {
+		if hm[curr.Next.Val] {
+			curr.Next = curr.Next.Next
+			continue
+		}
+		hm[curr.Next.Val] = true
+		curr = curr.Next
+	}
+	return head
+}
+```
+如果链表已经排序，当然可以进一步优化去重的步骤，移除 `hm` 这个变量以节省 $O(n)$ 的空间
+#### 环状结构
+如果链表中存在环状结构，会导致无限循环下去，可以使用快慢指针快速遍历判断是否存在环状结构
+```go
+func hasCycle(head *ListNode) bool {
+	if head == nil {
+		return false
+	}
+	slow, fast := head, head
+	for fast != nil && fast.Next != nil {
+		slow = slow.Next
+		fast = fast.Next.Next
+		if slow == fast {
+			return true
+		}
+	}
+	return false
+}
+```
+#### 寻找倒数第 n 个对象
+使用左右指针构造一个间距，然后同步遍历直到右指针越界
+```go
+func FindKthToTail(pHead *ListNode, k int) *ListNode {
+    left, right := pHead, pHead
+    for i := 0; i < k; i++ {
+        if right == nil {
+                // k > len(ListNode) + 1
+            return nil
+        }
+        right = right.Next
+    }
+    for right != nil {
+        left = left.Next
+        right = right.Next
+    }
+    return left
+}
+```
+#### 寻找共同节点
+p1 的长度与 p2 的长度不一定相同，可以整合为 p1 -> p2 与 p2 -> p1 的形式来遍历 
+```go
+func FindFirstCommonNode( pHead1 *ListNode ,  pHead2 *ListNode ) *ListNode {
+    p1, p2 := pHead1, pHead2
+    if p1 == nil || p2 == nil {
+        return nil
+    }
+    for p1 != p2 {
+        if p1 == nil {
+            p1 = pHead2
+        }else{
+            p1 = p1.Next
+        }
+        if p2 == nil {
+            p2 = pHead1
+        }else{
+            p2 = p2.Next
+        }
+    }
+    return p2
+}
+```
+
+
+### 反转
+对与 $ x_1 \rightarrow x_2 \rightarrow x_3 \rightarrow x_4 \rightarrow \cdots \rightarrow x_n $ 需要按照顺序先拆开 $ x_1 \rightarrow x_2 $，再拆开 $ x_2 \rightarrow x_3 $ 这样就能让 $x_2 \rightarrow x_1$ 以实现反转，为此需要至少三个指针来记录当前节点 $x_i$，前一个节点 $x_{i-1}$ 和后一个节点 $x_{i+1}$ 的位置
+#### head 的值递进
+```go
+func ListReverse(head *ListNode) *ListNode {
+// [1] -> 2 -> ... -> n ==> n -> ... -> 2 -> 1 -> [nil]
+    var pre, next *ListNode // pre = nil, next = nil
+    for head != nil {       // 以第一次遍历为例
+        next = head.Next    // next = 2
+        head.Next = pre     // 1 -> 2 ==> 1 -> nil
+        pre = head          // pre = 1
+        head = next         // head = 2
+    }
+    return pre
+}
+```
+#### head 的值不变
+```go
+func ListReverse(head *ListNode) *ListNode {
+// [1] -> 2 -> ... -> n ==> n -> ... -> 2 -> [1] -> nil
+    var pre, next *ListNode // pre = nil, next = nil
+    curr := head
+    for curr != nil {       // 以第一次遍历为例
+        next = curr.Next    // next = 2
+        curr.Next = pre     // 1 -> 2 ==> 1 -> nil
+        pre = curr          // pre = 1
+        curr = next         // curr = 2, head = 1
+    }
+    // head.Next = someNode
+    return pre
+}
+
+```
+前者适用于无需考虑衔接的情况，后者则提供了末尾的节点以链接其他节点
+### 合并
+链表的合并一般指按照一定规则合并，比如按照已有的排序规则从小到大
+```go
+func mergeTwoLists(l1 *ListNode, l2 *ListNode) *ListNode {
+    if l1 == nil {
+        return l2
+    }
+    if l2 == nil {
+        return l1
+    }
+    if l1.Val < l2.Val {
+        l1.Next = mergeTwoLists(l1.Next, l2)
+        return l1
+    } else {
+        l2.Next = mergeTwoLists(l1, l2.Next)
+        return l2
+    }
+}
+```
+多链表合并可以分解为多个双链表合并
+```go
+func mergeKLists(lists []*ListNode) *ListNode {
+	// write code here
+	ll := len(lists)
+	switch ll {
+	case 0:
+		return nil
+	case 1:
+		return lists[0]
+	default:
+		for i := 1; i < ll; i++ {
+			lists[i] = mergeTwoLists(lists[i-1], lists[i])
+		}
+		return lists[ll-1]
+	}
+}
+```
+### 排序
+最适合链表的排序是 `归并排序(Merge Sort)` ，将链表不断拆分到只剩一到两个元素，再做[有序链表合并](#合并)
+#### 递归实现
+```go
+func sortInList(head *ListNode) *ListNode {
+	if head == nil || head.Next == nil {
+		return head
+	}
+	mid := getMiddle(head)
+	r := mid.Next
+	mid.Next = nil
+	left := sortInList(head)
+	right := sortInList(r)
+	return mergeTwoLists(left, right)
+}
+func getMiddle(head *ListNode) *ListNode {
+	if head == nil {
+		return head
+	}
+	slow, fast := head, head
+	for fast.Next != nil && fast.Next.Next != nil {
+		slow = slow.Next
+		fast = fast.Next.Next
+	}
+	return slow
+}
+func mergeTwoLists(l1 *ListNode, l2 *ListNode) *ListNode {
+	if l1 == nil {
+		return l2
+	}
+	if l2 == nil {
+		return l1
+	}
+	if l1.Val < l2.Val {
+		l1.Next = mergeTwoLists(l1.Next, l2)
+		return l1
+	}
+	l2.Next = mergeTwoLists(l1, l2.Next)
+	return l2
+}
+```
+
+
+
+
