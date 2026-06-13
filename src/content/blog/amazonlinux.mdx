@@ -1,0 +1,57 @@
+---
+title: Amazon Linux 
+description: "null"
+pubDate: 10 Jun 2026
+category: Cloud
+tags: 
+- AWS
+- Amazon
+- Linux
+- Github Cli
+- ffmpeg
+- Shell
+heroImage: '../../assets/clashhotspot.jpg'
+---
+
+Amazon Linux 是亚马逊针对 AWS 开发的 Linux 发行版，基于 `fedora`，包管理器为 `dnf4`，最后一个大版本停留在 `2023`，Linux 内核版本为 `6.1.172`。
+
+### 作为 AWS CloudShell
+AWS CloudShell 默认提供了少量语言的环境，可以非常方便的对代码进行临时测试以及构建容器镜像以及推送镜像到 `ECR`，由于 AWS 只允许使用 `ECR` 之内的镜像，但是又没有很方便的 `CI/CD` 搭建流程，所以在 CloudShell 中测试代码和构建镜像是一种很常见的做法。不过相较于 Debian 系的系统，Amazon Linux 在测试软件时会遇到许多不变，这里列出我遇到的一些安装起来较为麻烦的软件以及安装脚本。
+
+
+### 安装 Github Cli
+```bash
+sudo dnf install 'dnf-command(config-manager)' -y
+sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
+sudo dnf install gh -y
+```
+这里提供了一个脚本快速安装
+```bash
+bash <(curl -fsSL https://sh.wepayto.win/AWSgh.sh)
+```
+
+### 安装 ffmpeg
+```bash
+# Navigate to local bin directory
+cd /usr/local/bin
+
+# Download the latest stable static build
+sudo wget https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
+
+# Extract the archive
+sudo tar -xJf ffmpeg-release-amd64-static.tar.xz
+
+# Move the binaries to the current path
+sudo mv ffmpeg-*-amd64-static/ffmpeg .
+sudo mv ffmpeg-*-amd64-static/ffprobe .
+
+# Clean up the downloaded files
+sudo rm -rf ffmpeg-release-amd64-static.tar.xz ffmpeg-*-amd64-static
+```
+这里提供了一个脚本快速安装
+```bash
+bash <(curl -fsSL https://sh.wepayto.win/AWSffmpeg.sh)
+``` 
+
+
+
