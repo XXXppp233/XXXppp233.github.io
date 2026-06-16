@@ -1,0 +1,86 @@
+---
+title: Huawei Cloud Function 部署脚本
+description: "null"
+pubDate: 11 Jun 2026
+category: Cloud
+tags: 
+- Huawei Cloud
+- Cloud Function
+- Docker
+- Artifact Registry
+- CloudShell
+heroImage: '../../assets/clashhotspot.jpg'
+---
+
+华为云函数的部分显然是模仿的 `AWS Lambda`，所以和后者一样支持通过镜像来部署。这让他在事实上支持了所有的语言和运行环境，直接使用镜像也比在华为云上自定义运行时方便的多。
+
+
+### 云函数
+
+华为云似乎是国内唯一一个拥有免费云函数额度的云服务厂商，仅以内存使用量计费。提供的免费额度是每月 $400,000 GB$ 秒 与 $1,000,000$ 调用次数，这个额度与 AWS 相当，但是华为云并没有对数据传输进行计费，可能会存在隐形限制，暂时未知。
+
+以最小的 $128M$ 实例为例，$400,000 GB$ 秒的免费额度足够不间断运行大约 $37$ 天。
+
+### 镜像仓库
+华为云[免费](#参考)提供镜像仓库也就是 `Artifact Registry`，在华为上云叫 `SWR` 这无疑是慷慨的。
+
+由于华为云函数只允许来自 `SWR` 的镜像，所以在华为云上部署云函数的第一步就是把镜像推送到 `SWR` 上。
+
+### CloudShell
+Cloud Shell 预装了对应的命令和工具和验证凭据，可以便利的访问云服务商的资源。就我的使用习惯来说，我更喜欢直接在 Cloud Shell 中构建镜像并推送到对应云服务上的仓库，这样可以免去在本地下载/卸载对应命令行工具以及处理验证时的麻烦，大多数云服务商的 Cloud Shell 提供的配置都足以完成这个流程。
+
+华为云的 CloudShell 为 `Ubuntu 18.04 LTS`，提供了慷慨的 [`12vCPU`](#参考) 和 `91GB` 内存的豪华配置，但却像是个半成品，它的开发环境是残废的，界面像是一个简陋的 `Vscode`，没有 GCP 上的 CloudShell Editor 上的那样完整，也没有类似 GCP 和 Azure 的端口预览功能，甚至没有预装 `Docker`，作为对比，在其他云服务商的 CloudShell 上都可以完成代码的测试，利用自带的命令行工具登陆 Docker 然后构建并推送镜像到仓库。
+
+这里并不是在抱怨华为云 CloudShell，而是基于国内的网络环境，提供一个完整可靠的开发环境是不现实的。在 CloudShell 上使用 `wget` 下载 `Github Cli` 的速度可能慢的只有 $10KB/s$。这样的网络环境，即使有再强的硬件，也是心有余而力不足了。
+
+华为云选择相信群众智慧，给了一个一键验证的临时凭据。
+
+
+### 参考
+1. [容器镜像服务免费提供给您。](https://support.huaweicloud.com/usermanual-swr/swr_01_0009.html#:~:text=%E8%AF%B4%E6%98%8E%EF%BC%9A-,%E5%AE%B9%E5%99%A8%E9%95%9C%E5%83%8F%E6%9C%8D%E5%8A%A1%E5%85%8D%E8%B4%B9%E6%8F%90%E4%BE%9B%E7%BB%99%E6%82%A8%E3%80%82,-%E5%9B%BE1%20SWR)
+2. [华为云函数 SDK](https://support.huaweicloud.com/sdkreference-functiongraph/functiongraph_07_0100.html)
+3. 配置参考
+```bash
+lscpu
+Architecture:        x86_64
+CPU op-mode(s):      32-bit, 64-bit
+Byte Order:          Little Endian
+CPU(s):              12
+On-line CPU(s) list: 0-11
+Thread(s) per core:  2
+Core(s) per socket:  6
+Socket(s):           1
+NUMA node(s):        1
+Vendor ID:           GenuineIntel
+CPU family:          6
+Model:               106
+Model name:          Intel(R) Xeon(R) Platinum 8378A CPU @ 3.00GHz
+Stepping:            6
+CPU MHz:             3000.000
+BogoMIPS:            6000.00
+Hypervisor vendor:   KVM
+Virtualization type: full
+L1d cache:           48K
+L1i cache:           32K
+L2 cache:            1280K
+L3 cache:            49152K
+NUMA node0 CPU(s):   0-11
+Flags:               fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology nonstop_tsc cpuid tsc_known_freq pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch cpuid_fault invpcid_single ssbd ibrs ibpb stibp ibrs_enhanced fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves wbnoinvd arat avx512vbmi umip avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq fsrm md_clear arch_capabilities
+
+free -h
+              total        used        free      shared  buff/cache   available
+Mem:            91G        5.9G         68G        116M         16G         84G
+Swap:            0B          0B          0B
+
+df -h
+Filesystem                Size  Used Avail Use% Mounted on
+overlay                    98G   12G   82G  13% /
+tmpfs                      64M     0   64M   0% /dev
+tmpfs                      46G     0   46G   0% /sys/fs/cgroup
+/dev/mapper/vgpaas-share   98G   12G   82G  13% /etc/hosts
+shm                        64M     0   64M   0% /dev/shm
+tmpfs                      46G     0   46G   0% /proc/acpi
+tmpfs                      46G     0   46G   0% /proc/scsi
+tmpfs                      46G     0   46G   0% /sys/firmware
+```
+
