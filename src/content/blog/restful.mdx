@@ -6,7 +6,8 @@ category: Cloud
 tags: 
 - cloud
 - RESTful
-- linux
+- GraphQL
+- RPC
 heroImage: '../../assets/clashhotspot.jpg'
 ---
 
@@ -198,8 +199,8 @@ func main() {
 
 由于 gRPC 通常与微服务架构、网络协议（HTTP/2）和特定后端语言深度绑定，所以难以作为前后端的通信协议，适合处理不同服务端的通信。
 
-### SSE
-Server-Sent Events，SSE 是一种单向通信协议，服务端可以通过 SSE 向客户端推送事件，但客户端无法通过 SSE 向服务端发送数据。SSE 基于 HTTP 协议，使用文本格式传输数据，适合实时更新的场景。SSE 格式的请求往往可以在响应头中看到 `Content-Type: text/event-stream`。其本质上是一个长链接，当客户端链接时为客户端建立一个通道，服务端监听这个通道的状态以决定应该关闭连接还是发送数据。在实际应用中，有状态的客户端可以通过 RESTful API 向服务端传输数据，服务端再向客户端传输更新后的状态。
+{/* ### SSE
+Server-Sent Events，SSE 是一种单向通信协议，服务端可以通过 SSE 向客户端推送事件，但客户端无法通过 SSE 向服务端发送数据。SSE 基于 HTTP 协议，使用文本格式传输数据，适合实时更新的场景。SSE 格式的请求往往可以在响应头中看到 `Content-Type: text/event-stream`。其本质上是一个长链接，当客户端链接时为客户端建立一个通道，服务端监听这个通道的状态以决定应该关闭连接还是发送数据。在实际应用中，有状态的客户端可以通过 RESTful API 向服务端传输数据，服务端再向客户端传输更新后的状态。 */}
 
 {/* ### WebSocket */}
 
