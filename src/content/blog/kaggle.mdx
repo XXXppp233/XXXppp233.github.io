@@ -1,0 +1,160 @@
+---
+title: Kaggle
+description: "null"
+pubDate: 2 Jul 2026
+category: Kaggle
+tags: 
+- Kaggle
+- Google Cloud
+heroImage: '../../assets/clashhotspot.jpg'
+---
+
+Kaggle 是一个数据科学竞赛平台，提供了丰富的数据集和工具，帮助数据科学家和机器学习工程师提升技能和解决实际问题。如果你有能力验证一个手机号码的话，Kaggle 就能为你的代码提供至多两个 Nvidia T4 GPU 每周 30 小时的免费额度，Kaggle 上使用 Jupyter notebook 来编写代码，可以参照 Colab，在代码块的行首添加 `!`即可执行 Shell 命令。
+### 配置
+简单查阅信息后得知，这台服务器位于 GCP 的 `us-central1` 区域，也就是 `Iowa`，以 GCP 的抢占式实例定价标准来算，每小时成本约 1.60 美元。8 TB 的硬盘可用空间为 1.1TB 对于小型的机器学习来说绰绰有余了。
+|指标|规格|
+|---|---|
+|CPU|4 vCPU|
+|内存|31 GiB|
+|磁盘|8 TiB|
+|GPU|2 x Nvidia T4|
+
+#### 系统信息
+```bash
+!cat /etc/os-release
+!lscpu
+!free -h
+!df -h
+```
+```bash
+PRETTY_NAME="Ubuntu 22.04.5 LTS"
+NAME="Ubuntu"
+VERSION_ID="22.04"
+VERSION="22.04.5 LTS (Jammy Jellyfish)"
+VERSION_CODENAME=jammy
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=jammy
+Architecture:                x86_64
+  CPU op-mode(s):            32-bit, 64-bit
+  Address sizes:             46 bits physical, 48 bits virtual
+  Byte Order:                Little Endian
+CPU(s):                      4
+  On-line CPU(s) list:       0-3
+Vendor ID:                   GenuineIntel
+  Model name:                Intel(R) Xeon(R) CPU @ 2.00GHz
+    CPU family:              6
+    Model:                   85
+    Thread(s) per core:      2
+    Core(s) per socket:      2
+    Socket(s):               1
+    Stepping:                3
+    BogoMIPS:                4000.36
+    Flags:                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pg
+                             e mca cmov pat pse36 clflush mmx fxsr sse sse2 ss h
+                             t syscall nx pdpe1gb rdtscp lm constant_tsc rep_goo
+                             d nopl xtopology nonstop_tsc cpuid tsc_known_freq p
+                             ni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2ap
+                             ic movbe popcnt tsc_deadline_timer aes xsave avx f1
+                             6c rdrand hypervisor lahf_lm abm 3dnowprefetch pti 
+                             ssbd ibrs ibpb stibp fsgsbase tsc_adjust bmi1 hle a
+                             vx2 smep bmi2 erms invpcid rtm mpx avx512f avx512dq
+                              rdseed adx smap clflushopt clwb avx512cd avx512bw 
+                             avx512vl xsaveopt xsavec xgetbv1 xsaves arat md_cle
+                             ar arch_capabilities
+Virtualization features:     
+  Hypervisor vendor:         KVM
+  Virtualization type:       full
+Caches (sum of all):         
+  L1d:                       64 KiB (2 instances)
+  L1i:                       64 KiB (2 instances)
+  L2:                        2 MiB (2 instances)
+  L3:                        38.5 MiB (1 instance)
+NUMA:                        
+  NUMA node(s):              1
+  NUMA node0 CPU(s):         0-3
+Vulnerabilities:             
+  Gather data sampling:      Not affected
+  Indirect target selection: Mitigation; Aligned branch/return thunks
+  Itlb multihit:             Not affected
+  L1tf:                      Mitigation; PTE Inversion
+  Mds:                       Mitigation; Clear CPU buffers; SMT Host state unkno
+                             wn
+  Meltdown:                  Mitigation; PTI
+  Mmio stale data:           Vulnerable: Clear CPU buffers attempted, no microco
+                             de; SMT Host state unknown
+  Reg file data sampling:    Not affected
+  Retbleed:                  Mitigation; IBRS
+  Spec rstack overflow:      Not affected
+  Spec store bypass:         Mitigation; Speculative Store Bypass disabled via p
+                             rctl
+  Spectre v1:                Mitigation; usercopy/swapgs barriers and __user poi
+                             nter sanitization
+  Spectre v2:                Mitigation; IBRS; IBPB conditional; STIBP condition
+                             al; RSB filling; PBRSB-eIBRS Not affected; BHI SW l
+                             oop, KVM SW loop
+  Srbds:                     Not affected
+  Tsa:                       Not affected
+  Tsx async abort:           Mitigation; Clear CPU buffers; SMT Host state unkno
+                             wn
+  Vmscape:                   Not affected
+               total        used        free      shared  buff/cache   available
+Mem:            31Gi       791Mi        27Gi       1.0Mi       3.3Gi        30Gi
+Swap:             0B          0B          0B
+Filesystem        Size  Used Avail Use% Mounted on
+overlay           7.9T  6.9T  1.1T  87% /
+tmpfs              64M     0   64M   0% /dev
+shm                14G     0   14G   0% /dev/shm
+/dev/sda1         122G  3.6G  119G   3% /opt/bin
+/dev/loop1         20G   68K   20G   1% /kaggle/lib
+/dev/mapper/snap  7.9T  6.9T  1.1T  87% /etc/hosts
+tmpfs              16G     0   16G   0% /proc/acpi
+tmpfs              16G     0   16G   0% /proc/scsi
+tmpfs              16G     0   16G   0% /sys/firmware
+```
+#### GPU
+```bash
+!sudo apt update && sudo apt install pciutils # 安装 lspci
+!lspci
+```
+```bash
+00:00.0 Host bridge: Intel Corporation 440FX - 82441FX PMC [Natoma] (rev 02)
+00:01.0 ISA bridge: Intel Corporation 82371AB/EB/MB PIIX4 ISA (rev 03)
+00:01.3 Bridge: Intel Corporation 82371AB/EB/MB PIIX4 ACPI (rev 03)
+00:03.0 Non-VGA unclassified device: Red Hat, Inc. Virtio SCSI
+00:04.0 3D controller: NVIDIA Corporation TU104GL [Tesla T4] (rev a1)
+00:05.0 3D controller: NVIDIA Corporation TU104GL [Tesla T4] (rev a1)
+00:06.0 Ethernet controller: Red Hat, Inc. Virtio network device
+00:07.0 Unclassified device [00ff]: Red Hat, Inc. Virtio RNG
+```
+#### 网络
+```bash
+!curl ipinfo.io
+```
+```json
+{
+  "ip": "34.56.242.250",
+  "hostname": "250.242.56.34.bc.googleusercontent.com",
+  "city": "Council Bluffs",
+  "region": "Iowa",
+  "country": "US",
+  "loc": "41.2619,-95.8608",
+  "org": "AS396982 Google LLC",
+  "postal": "51503",
+  "timezone": "America/Chicago",
+  "readme": "https://ipinfo.io/missingauth"
+}
+```
+
+### 要做什么
+显然这个服务器非常适合用来学习和推理8~16B的大语言模型，但是在折腾大语言模型之前，我准备先跑一下 NovelAI 的文生图模型，NovelAI 应该是我第一次接触到的生成式 AI 模型。高中时期我到处参考别人的提示词来生成二次元图片。
+
+
+
+
+
+
