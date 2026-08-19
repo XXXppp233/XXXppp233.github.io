@@ -1,307 +1,225 @@
 ---
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
-import Header from '../components/Header.astro';
+import { getCollection } from 'astro:content';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { getCategoryTerms, getTagTerms, sortPostsByDate } from '../utils/taxonomy';
 
-// Interface for a left-side fading hero image:
-// 1. Add your image under src/assets/
-// 2. Import it here, for example: import HeroFadeImage from '../assets/hero-fade.jpg';
-// 3. Set: const heroFadeImage = HeroFadeImage.src;
-const heroFadeImage = '';
+const posts = sortPostsByDate(await getCollection('blog'));
+const categories = getCategoryTerms(posts);
+const tags = getTagTerms(posts);
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 	</head>
 	<body>
-		<Header />
 		<main>
-			<section class="hero panel">
-				<div
-					class:list={['hero-copy', { 'has-fade-image': heroFadeImage }]}
-					style={heroFadeImage ? `--hero-fade-image: url('${heroFadeImage}')` : undefined}
-				>
-					<p class="eyebrow">1930 Cartoon Style</p>
-					<h1>Ink & Wash Studio</h1>
-					<p>
-						本博客小心翼翼地采用了1930年代的卡通风格，旨在为读者提供一种独特的视觉体验。通过厚重的线条、柔和的水彩效果和充满弹性的动画营造出一种既怀旧又充满活力的氛围，让每一篇文章都像是一幅生动的插图，带领读者进入一个充满创意和想象力的世界。
-					</p>
+			<section class="world-hero" aria-labelledby="home-title">
+				<div class="hero-copy">
+					<p class="eyebrow">A SMALL WORLD, YOUR VIEW</p>
+					<h1 id="home-title">从你所在的<br /><em>这一面地球</em><br />开始阅读。</h1>
+					<p class="intro">这里收集关于代码、云端与日常灵感的手写笔记。地球会根据你的时区转到此刻正对着你的经线。</p>
 					<div class="hero-actions">
-						<a class="button primary" href="/blog">Read the reels</a>
-						<a class="button" href="/about">Meet the artist</a>
-						<a class="button mahjong" href="https://mahjong.wepayto.win">Play MahJong</a>
+						<a class="button primary" href="/blog">进入文章</a>
+						<a class="button" href="/about">关于本站</a>
+						<a class="button mahjong" href="https://mahjong.wepayto.win">Play Mahjong</a>
+					</div>
+					<div class="timezone-readout" aria-live="polite">
+						<span class="pulse"></span>
+						<span>正在定位</span>
+						<strong data-timezone>你的时区</strong>
 					</div>
 				</div>
 
+				<div class="earth-stage" data-earth-stage>
+					<p class="stage-label">YOU ARE HERE <span data-utc-offset>UTC</span></p>
+					<div class="orbit orbit-one"></div>
+					<div class="orbit orbit-two"></div>
+					<svg class="earth" viewBox="0 0 600 600" role="img" aria-labelledby="earth-title earth-description">
+						<title id="earth-title">随访客时区转动的手绘地球</title>
+						<desc id="earth-description">蓝色海洋、绿色陆地和黄色经线组成的卡通风格地球。</desc>
+						<defs>
+							<clipPath id="globe-clip"><circle cx="300" cy="300" r="222" /></clipPath>
+							<filter id="soft-ink"><feTurbulence baseFrequency="0.018" numOctaves="2" result="noise"/><feDisplacementMap in="SourceGraphic" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G"/></filter>
+						</defs>
+						<circle class="globe-shadow" cx="316" cy="326" r="226" />
+						<circle class="globe-water" cx="300" cy="300" r="222" />
+						<g clip-path="url(#globe-clip)">
+							<g class="longitude-lines">
+								<ellipse cx="300" cy="300" rx="55" ry="222"/><ellipse cx="300" cy="300" rx="130" ry="222"/><path d="M78 300h444"/><path d="M109 190c102 35 280 35 382 0"/><path d="M109 410c102-35 280-35 382 0"/>
+							</g>
+							<g class="world-map" data-world-map filter="url(#soft-ink)">
+								<path class="land land-one" d="M102 182c30-31 72-42 117-27l25 28-18 19 23 26-8 34-29 8-14 33-43 10-19-36-42-13 14-30-18-22z" />
+								<path class="land land-two" d="M260 112c40-18 98-13 128 21l-9 29 27 20-19 22 8 35-36 31-25-19-31 18-19-28 12-36-24-21 9-32z" />
+								<path class="land land-three" d="M305 300l43 17 10 38-22 15 10 41-25 62-29-12-8-47-22-26 17-40-14-27z" />
+								<path class="land land-four" d="M432 286l43 8 17 30-19 28 12 31-31 20-34-24 8-34-20-25z" />
+								<path class="land land-five" d="M180 428l39-5 25 19-15 23-53-3-14-19z" />
+								<path class="land land-six" d="M407 440l35-5 24 21-18 22-44-8z" />
+								<path class="land-detail" d="M136 222l36 11m154-76 36 10m-57 193 19 18m109-49 26 7" />
+							</g>
+							<path class="terminator" d="M404 60c88 72 112 219 55 339-33 70-98 123-171 143 94-83 113-170 97-266-16-98-4-161 19-216z"/>
+						</g>
+						<circle class="globe-outline" cx="300" cy="300" r="222" />
+						<path class="globe-glint" d="M169 146c-37 31-59 74-65 120"/>
+					</svg>
+					<div class="location-pin" aria-hidden="true"><span></span></div>
+					<p class="rotation-note">地球正转向你的时区</p>
+				</div>
 			</section>
-			<section class="feature-grid">
-				<article class="panel feature">
-					<span>01</span>
-					<h2>Ink Lines</h2>
-					<p>Thick outlines, playful silhouettes, and imperfect curves that feel drawn by hand.</p>
-				</article>
-				<article class="panel feature">
-					<span>02</span>
-					<h2>Watercolor</h2>
-					<p>Soft washes, paper grain, muted pigments, and backgrounds that avoid flat color.</p>
-				</article>
-				<article class="panel feature">
-					<span>03</span>
-					<h2>Rubber Motion</h2>
-					<p>Subtle squash, lifted buttons, and bouncy entrances without adding JavaScript.</p>
-				</article>
+
+			<section class="home-library" id="articles" aria-labelledby="library-title">
+				<div class="library-heading">
+					<p class="eyebrow">FIELD NOTES</p>
+				</div>
+				<div class="library-filter" aria-label="文章筛选">
+					<button class="filter-button is-active" type="button" data-library-reset>全部文章 <span>{posts.length}</span></button>
+					<div class="filter-group" id="categories">
+						<p>分类</p>
+						{categories.map((item) => <button class="filter-button category-filter" type="button" data-library-filter="category" data-value={item.name}>{item.name} <span>{item.count}</span></button>)}
+					</div>
+					<div class="filter-group" id="tags">
+						<p>标签</p>
+						{tags.map((item) => <button class="filter-button tag-filter" type="button" data-library-filter="tag" data-value={item.name}>#{item.name} <span>{item.count}</span></button>)}
+					</div>
+				</div>
+				<ul class="article-shelf" data-library-list>
+					{posts.map((post) => <li data-library-item data-category={post.data.category || ''} data-tags={post.data.tags.join('|')}>
+						<a href={`/blog/${post.id}/`}>
+							<p class="article-meta">{post.data.category || '未分类'}</p>
+							<h3>{post.data.title}</h3>
+							<p>{post.data.description}</p>
+							<span class="read-more">阅读文章 →</span>
+						</a>
+					</li>)}
+				</ul>
+				<p class="empty-results" data-library-empty hidden>没有符合条件的文章，试试其他线索。</p>
 			</section>
 		</main>
 		<Footer />
+		<script>
+			const stage = document.querySelector<HTMLElement>('[data-earth-stage]');
+			const map = document.querySelector<SVGGElement>('[data-world-map]');
+			const timezone = document.querySelector<HTMLElement>('[data-timezone]');
+			const utcOffset = document.querySelector<HTMLElement>('[data-utc-offset]');
+
+			const getTimezoneOffset = (date: Date, zone: string) => {
+				const parts = new Intl.DateTimeFormat('en-US', {
+					timeZone: zone,
+					year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
+				}).formatToParts(date);
+				const values = Object.fromEntries(parts.filter(({ type }) => type !== 'literal').map(({ type, value }) => [type, value]));
+				const localTime = Date.UTC(Number(values.year), Number(values.month) - 1, Number(values.day), Number(values.hour), Number(values.minute), Number(values.second));
+				return Math.round((localTime - date.getTime()) / 60000);
+			};
+
+			if (stage && map && timezone && utcOffset) {
+				const zone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+				const minutes = getTimezoneOffset(new Date(), zone);
+				const sign = minutes >= 0 ? '+' : '−';
+				const hours = String(Math.floor(Math.abs(minutes) / 60)).padStart(2, '0');
+				const minutesPart = String(Math.abs(minutes) % 60).padStart(2, '0');
+				const shift = -(minutes / 1440) * 420;
+				map.setAttribute('transform', `translate(${shift} 0)`);
+				stage.style.setProperty('--earth-turn', `${-(minutes / 1440) * 24}deg`);
+				timezone.textContent = zone.replace(/_/g, ' ');
+				utcOffset.textContent = `UTC${sign}${hours}:${minutesPart}`;
+			}
+		</script>
+		<script>
+			const filterButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-library-filter]'));
+			const resetButton = document.querySelector<HTMLButtonElement>('[data-library-reset]');
+			const articleItems = Array.from(document.querySelectorAll<HTMLElement>('[data-library-item]'));
+			const emptyResults = document.querySelector<HTMLElement>('[data-library-empty]');
+
+			const showArticles = (filterType?: string, filterValue?: string) => {
+				let visibleCount = 0;
+				for (const item of articleItems) {
+					const values = filterType === 'tag' ? item.dataset.tags?.split('|') : [item.dataset.category];
+					const isVisible = !filterValue || values?.includes(filterValue);
+					item.hidden = !isVisible;
+					if (isVisible) visibleCount += 1;
+				}
+				if (emptyResults) emptyResults.hidden = visibleCount > 0;
+			};
+
+			for (const button of filterButtons) {
+				button.addEventListener('click', () => {
+					filterButtons.forEach((item) => item.classList.toggle('is-active', item === button));
+					resetButton?.classList.remove('is-active');
+					showArticles(button.dataset.libraryFilter, button.dataset.value);
+					document.querySelector('#articles')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+				});
+			}
+			resetButton?.addEventListener('click', () => {
+				filterButtons.forEach((button) => button.classList.remove('is-active'));
+				resetButton.classList.add('is-active');
+				showArticles();
+			});
+		</script>
 	</body>
 </html>
+
 <style>
-	main {
-		width: 1120px;
-	}
-
-	.hero {
-		display: grid;
-		grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.72fr);
-		gap: 2rem;
-		align-items: center;
-		min-height: 560px;
-		padding: clamp(1.4rem, 5vw, 4rem);
-	}
-
-	.hero-copy,
-	.hero-visual {
-		position: relative;
-		z-index: 1;
-	}
-
-	.hero-copy {
-		isolation: isolate;
-	}
-
-	.hero-copy.has-fade-image::before {
-		position: absolute;
-		inset: -2rem -3rem -2rem -2rem;
-		z-index: -1;
-		content: "";
-		background-image: var(--hero-fade-image);
-		background-repeat: no-repeat;
-		background-position: left center;
-		background-size: min(58vw, 760px) auto;
-		filter: grayscale(1) contrast(1.08);
-		opacity: 0.34;
-		-webkit-mask-image: linear-gradient(90deg, black 0%, rgba(0, 0, 0, 0.8) 34%, transparent 82%);
-		mask-image: linear-gradient(90deg, black 0%, rgba(0, 0, 0, 0.8) 34%, transparent 82%);
-	}
-
-	.hero p:not(.eyebrow) {
-		max-width: 42rem;
-		color: rgb(var(--gray));
-		font-size: 1.08em;
-	}
-
-	.hero-actions {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.85em;
-		margin-top: 1.8em;
-	}
-
-	.button {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		min-height: 3.1em;
-		padding: 0.75em 1.15em;
-		color: var(--ink);
-		font-weight: 700;
-		text-decoration: none;
-		background: var(--paper-light);
-		border: 3px solid var(--ink);
-		border-radius: 999px 820px 930px 760px;
-		box-shadow: 5px 6px 0 rgba(var(--ink-rgb), 0.18);
-	}
-
-	.button:hover {
-		transform: translateY(-3px) rotate(-1deg);
-		box-shadow: 7px 9px 0 rgba(var(--ink-rgb), 0.2);
-	}
-
-	.button.primary {
-		color: var(--paper-light);
-		background: var(--paint-red);
-	}
-	.button.mahjong {
-		background: var(--paint-gold);
-	}
-
-	.hero-visual {
-		display: grid;
-		place-items: center;
-		min-height: 360px;
-	}
-
-	.toon-card {
-		position: relative;
-		width: min(100%, 340px);
-		aspect-ratio: 0.78;
-		padding: 1.2rem;
-		background:
-			radial-gradient(circle at 35% 22%, rgba(255, 255, 255, 0.72), transparent 5.8rem),
-			radial-gradient(circle at 82% 78%, rgba(80, 80, 76, 0.18), transparent 9rem),
-			linear-gradient(180deg, rgba(230, 230, 224, 0.88), rgba(247, 247, 241, 0.96));
-		border: 5px solid var(--ink);
-		border-radius: 42px 34px 48px 32px;
-		box-shadow: 12px 13px 0 rgba(var(--ink-rgb), 0.2);
-		transform: rotate(2deg);
-	}
-
-	.caption {
-		position: absolute;
-		z-index: 2;
-		color: var(--paper-light);
-		font-size: 0.74em;
-		font-weight: 700;
-		letter-spacing: 0.08em;
-		background: var(--paint-brown);
-		border: 3px solid var(--ink);
-		border-radius: 999px;
-		padding: 0.25em 0.7em;
-	}
-
-	.caption {
-		right: 1.4rem;
-		bottom: 1.4rem;
-	}
-
-	.moon {
-		position: absolute;
-		top: 5rem;
-		right: 3rem;
-		width: 5.4rem;
-		height: 5.4rem;
-		background: var(--paint-gold);
-		border: 4px solid var(--ink);
-		border-radius: 50%;
-		box-shadow: inset -10px -9px 0 rgba(var(--ink-rgb), 0.12);
-	}
-
-	.character {
-		position: absolute;
-		left: 50%;
-		bottom: 4.4rem;
-		width: 10.6rem;
-		height: 12rem;
-		background: var(--paper-light);
-		border: 5px solid var(--ink);
-		border-radius: 48% 48% 38% 42%;
-		box-shadow: inset -13px -8px 0 rgba(var(--ink-rgb), 0.08);
-		transform: translateX(-50%) rotate(-3deg);
-	}
-
-	.character::before,
-	.character::after {
-		position: absolute;
-		top: 58%;
-		width: 3rem;
-		height: 4.8rem;
-		content: "";
-		background: var(--paint-red);
-		border: 4px solid var(--ink);
-		border-radius: 999px;
-	}
-
-	.character::before {
-		left: -2.1rem;
-		transform: rotate(28deg);
-	}
-
-	.character::after {
-		right: -2.1rem;
-		transform: rotate(-28deg);
-	}
-
-	.eye {
-		position: absolute;
-		top: 3.5rem;
-		width: 1.4rem;
-		height: 2rem;
-		background: var(--ink);
-		border-radius: 50%;
-	}
-
-	.eye::after {
-		position: absolute;
-		top: 0.25rem;
-		left: 0.25rem;
-		width: 0.35rem;
-		height: 0.5rem;
-		content: "";
-		background: white;
-		border-radius: 50%;
-	}
-
-	.eye.left {
-		left: 3rem;
-	}
-
-	.eye.right {
-		right: 3rem;
-	}
-
-	.smile {
-		position: absolute;
-		top: 6.2rem;
-		left: 50%;
-		width: 3.3rem;
-		height: 1.5rem;
-		border-bottom: 4px solid var(--ink);
-		border-radius: 0 0 999px 999px;
-		transform: translateX(-50%);
-	}
-
-	.feature-grid {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 1rem;
-		margin-top: 1rem;
-	}
-
-	.feature {
-		padding: 1.4rem;
-	}
-
-	.feature > * {
-		position: relative;
-		z-index: 1;
-	}
-
-	.feature span {
-		color: var(--paint-red);
-		font-weight: 700;
-		letter-spacing: 0.1em;
-	}
-
-	.feature h2 {
-		margin-top: 0.6rem;
-		font-size: 1.55rem;
-	}
-
-	.feature p {
-		color: rgb(var(--gray));
-	}
-
-	@media (max-width: 820px) {
-		.hero,
-		.feature-grid {
-			grid-template-columns: 1fr;
-		}
-
-		.hero {
-			min-height: auto;
-		}
-	}
+	main { width: min(1180px, calc(100% - 2rem)); padding: clamp(2.25rem, 5vw, 5.5rem) 0 4.5rem; }
+	.world-hero { display: grid; grid-template-columns: minmax(0, .95fr) minmax(400px, 1.05fr); align-items: center; min-height: 650px; gap: 2rem; }
+	.hero-copy { position: relative; z-index: 2; }
+	.hero-copy h1 { max-width: 680px; font-size: clamp(3.8rem, 7.2vw, 7.2rem); line-height: .88; letter-spacing: -.075em; text-shadow: none; }
+	.hero-copy h1 em { color: var(--earth-blue); font-style: normal; }
+	.intro { max-width: 35rem; margin: 1.6rem 0 0; color: #53606f; font-size: 1.05rem; line-height: 1.85; }
+	.hero-actions { display: flex; flex-wrap: wrap; gap: .7rem; margin-top: 2rem; }
+	.button { display: inline-flex; align-items: center; justify-content: center; min-height: 3.15rem; padding: .65rem 1.2rem; color: var(--ink); font-weight: 700; text-decoration: none; background: #fffdf6; border: 3px solid var(--ink); border-radius: 999px; box-shadow: 4px 5px 0 var(--ink); }
+	.button:hover { color: var(--ink); transform: translate(-1px, -2px); box-shadow: 6px 7px 0 var(--ink); }
+	.button.primary { color: #fffdf6; background: var(--ink); }
+	.button.mahjong { background: var(--paint-gold); }
+	.timezone-readout { display: flex; align-items: center; gap: .55rem; margin-top: 2.6rem; color: #647180; font-size: .77rem; font-weight: 700; letter-spacing: .055em; text-transform: uppercase; }
+	.timezone-readout strong { color: var(--ink); }
+	.pulse { width: .7rem; height: .7rem; border: 2px solid var(--ink); border-radius: 50%; background: var(--sun); }
+	.earth-stage { position: relative; display: grid; place-items: center; min-height: 620px; isolation: isolate; }
+	.stage-label { position: absolute; top: 3.8rem; right: .8rem; z-index: 2; margin: 0; color: var(--ink); font-size: .72rem; font-weight: 700; letter-spacing: .09em; transform: rotate(5deg); }
+	.stage-label span { display: inline-block; margin-left: .4rem; padding: .15rem .45rem; color: #fffdf6; background: var(--ink); border-radius: 999px; }
+	.orbit { position: absolute; border: 2px dashed #97a8a7; border-radius: 50%; transform: rotate(-20deg); }
+	.orbit-one { width: 88%; height: 42%; }
+	.orbit-two { width: 55%; height: 97%; transform: rotate(29deg); }
+	.earth { position: relative; z-index: 1; width: min(100%, 580px); overflow: visible; filter: drop-shadow(12px 17px 0 rgba(20, 39, 57, .15)); transform: rotate(var(--earth-turn, 0deg)); transition: transform 1.2s cubic-bezier(.2,.75,.25,1); }
+	.globe-shadow { fill: #152737; }
+	.globe-water { fill: var(--earth-blue); stroke: var(--ink); stroke-width: 8; }
+	.globe-outline { fill: none; stroke: var(--ink); stroke-width: 9; }
+	.longitude-lines { fill: none; stroke: #f5c94c; stroke-width: 4; opacity: .8; }
+	.world-map { transition: transform 1.2s cubic-bezier(.2,.75,.25,1); }
+	.land { fill: var(--earth-green); stroke: var(--ink); stroke-width: 6; stroke-linejoin: round; }
+	.land-two, .land-five { fill: #a7c96f; }
+	.land-detail { fill: none; stroke: #e6efbe; stroke-width: 5; stroke-linecap: round; }
+	.terminator { fill: #193d53; opacity: .32; mix-blend-mode: multiply; }
+	.globe-glint { fill: none; stroke: #f7f0cf; stroke-width: 13; stroke-linecap: round; }
+	.location-pin { position: absolute; z-index: 3; top: 42%; left: 48%; width: 1.2rem; height: 1.2rem; background: var(--coral); border: 3px solid var(--ink); border-radius: 50% 50% 50% 0; box-shadow: 3px 4px 0 var(--ink); transform: rotate(-45deg) translateY(-8px); }
+	.location-pin span { position: absolute; top: 3px; left: 3px; width: 5px; height: 5px; background: #fffdf6; border-radius: 50%; }
+	.rotation-note { position: absolute; bottom: 2.2rem; z-index: 2; margin: 0; padding: .4rem .8rem; color: var(--ink); font-size: .74rem; font-weight: 700; background: #fffdf6; border: 2px solid var(--ink); border-radius: 999px; transform: rotate(-3deg); }
+	.home-library { padding: clamp(2rem, 5vw, 4rem); margin-top: 1.5rem; background: rgba(255, 253, 246, .74); border: 3px solid var(--ink); border-radius: 2rem; box-shadow: 8px 9px 0 rgba(17, 17, 17, .14); }
+	.library-heading { display: grid; grid-template-columns: minmax(0, 1fr) minmax(14rem, .75fr); gap: 1rem 3rem; align-items: end; }
+	.library-heading .eyebrow { grid-column: 1 / -1; margin-bottom: 0; }
+	.library-heading h2 { margin: 0; font-size: clamp(2.6rem, 5vw, 4.8rem); text-shadow: none; }
+	.library-heading > p:last-child { margin: 0; color: #53606f; font-size: .95rem; }
+	.library-filter { display: grid; gap: .85rem; margin: 2.2rem 0 1.7rem; padding: 1rem 0; border-top: 2px dashed rgba(var(--ink-rgb), .35); border-bottom: 2px dashed rgba(var(--ink-rgb), .35); }
+	.filter-group { display: flex; flex-wrap: wrap; gap: .45rem; align-items: center; }
+	.filter-group p { width: 3rem; margin: 0; color: #53606f; font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+	.filter-button { padding: .34rem .65rem; color: var(--ink); font: inherit; font-size: .76rem; font-weight: 700; line-height: 1.25; cursor: pointer; background: #fffdf6; border: 2px solid var(--ink); border-radius: 999px; }
+	.filter-button span { display: inline-grid; min-width: 1.25rem; margin-left: .25rem; color: #fffdf6; font-size: .78em; background: var(--ink); border-radius: 999px; }
+	.filter-button:hover, .filter-button.is-active { color: #fffdf6; background: var(--ink); }
+	.filter-button:hover span, .filter-button.is-active span { color: var(--ink); background: var(--sun); }
+	.category-filter { background: #e3f0d4; }.tag-filter { background: #dceff2; }
+	.article-shelf { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin: 0; padding: 0; list-style: none; }
+	.article-shelf li { min-width: 0; background: #fffdf6; border: 2px solid var(--ink); border-radius: 1rem; box-shadow: 4px 5px 0 rgba(17, 17, 17, .12); }
+	.article-shelf a { display: flex; flex-direction: column; min-height: 100%; padding: 1.15rem; color: var(--ink); text-decoration: none; }
+	.article-shelf li:hover { transform: translateY(-4px) rotate(-.3deg); box-shadow: 7px 9px 0 rgba(17, 17, 17, .16); }
+	.article-meta { margin: 0 0 .8rem; color: var(--earth-blue); font-size: .7rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+	.article-shelf h3 { margin: 0; font-size: clamp(1.4rem, 2.2vw, 2rem); line-height: 1.05; text-shadow: none; }
+	.article-shelf a > p:not(.article-meta) { color: #53606f; font-size: .84rem; line-height: 1.6; }
+	.read-more { margin-top: auto; padding-top: .7rem; font-size: .77rem; font-weight: 700; }
+	.empty-results { margin: 1.5rem 0 0; color: #53606f; text-align: center; }
+	@media (max-width: 850px) { .world-hero { grid-template-columns: 1fr; }.earth-stage { min-height: 500px; margin-top: -1rem; }.earth { width: min(100%, 510px); }.article-shelf { grid-template-columns: 1fr; } }
+	@media (max-width: 560px) { main { width: min(100% - 1rem, 1180px); }.hero-copy h1 { font-size: clamp(3.4rem, 18vw, 5.4rem); }.earth-stage { min-height: 390px; }.stage-label { top: 1rem; right: 0; }.orbit-one { width: 96%; }.rotation-note { bottom: .3rem; }.timezone-readout { align-items: flex-start; flex-wrap: wrap; } }
+	@media (prefers-reduced-motion: reduce) { .earth, .world-map { transition: none; } }
 </style>

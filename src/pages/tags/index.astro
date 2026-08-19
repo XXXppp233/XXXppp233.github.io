@@ -2,7 +2,6 @@
 import { getCollection } from 'astro:content';
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
-import Header from '../../components/Header.astro';
 import { SITE_TITLE } from '../../consts';
 import { getTagHref, getTagTerms, mergeStaticTerm } from '../../utils/taxonomy';
 
@@ -58,7 +57,6 @@ const tags = mergeStaticTerm(getTagTerms(await getCollection('blog')), 'About');
 		</style>
 	</head>
 	<body>
-		<Header />
 		<main>
 			<section>
 				<div class="archive-head panel">

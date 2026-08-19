@@ -12,9 +12,14 @@ export async function getStaticPaths() {
 type Props = CollectionEntry<'blog'>;
 
 const post = Astro.props;
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
+const categoryPosts = post.data.category
+	? (await getCollection('blog'))
+		.filter((entry) => entry.data.category === post.data.category)
+		.sort((first, second) => second.data.pubDate.valueOf() - first.data.pubDate.valueOf())
+	: [];
 ---
 
-<BlogPost {...post.data}>
+<BlogPost {...post.data} categoryPosts={categoryPosts} currentPostId={post.id} headings={headings}>
 	<Content />
 </BlogPost>
